@@ -1,5 +1,5 @@
 .pio/
 _codeql_detected_source_root
-.vscode/launch.json
-.vscode/extensions.json
 .vscode/c_cpp_properties.json
+.vscode/extensions.json
+.vscode/launch.json
