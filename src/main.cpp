@@ -1,64 +1,50 @@
 // Simple hardware test firmware for the Maslow 4.
-// Drives all four DC motors at full speed continuously.
-//
-// Motor connections (from Maslow 4 firmware / TI DRV8873 motor driver via LEDC PWM):
-//   Top Left     (TL): IN1=GPIO45 (ch0), IN2=GPIO21 (ch1)
-//   Top Right    (TR): IN1=GPIO42 (ch2), IN2=GPIO41 (ch3)
-//   Bottom Left  (BL): IN1=GPIO37 (ch4), IN2=GPIO36 (ch5)
-//   Bottom Right (BR): IN1=GPIO9  (ch6), IN2=GPIO3  (ch7)
-//
-// The DRV8873 is driven with complementary PWM signals:
-//   Forward at full speed: IN2 = 1023 (max), IN1 = 0
+// Drives all four DC motors at full speed continuously using the exact same
+// DCMotor class and pin definitions as the Maslow 4 firmware.
 
 #include <Arduino.h>
+#include "DCMotor.h"
 
-// PWM settings (matching Maslow 4 DCMotor driver)
-#define MOTOR_PWM_FREQ 16000
-#define MOTOR_PWM_RES  10
-#define MOTOR_MAX_PWM  1023
+// Motor pin and channel definitions (copied from Maslow 4 firmware Maslow.cpp)
+#define tlIn1Pin     45
+#define tlIn1Channel 0
+#define tlIn2Pin     21
+#define tlIn2Channel 1
+#define tlADCPin     18
 
-// Motor pin and channel definitions
-#define TL_IN1_PIN  45
-#define TL_IN2_PIN  21
-#define TL_CH1      0
-#define TL_CH2      1
+#define trIn1Pin     42
+#define trIn1Channel 2
+#define trIn2Pin     41
+#define trIn2Channel 3
+#define trADCPin     6
 
-#define TR_IN1_PIN  42
-#define TR_IN2_PIN  41
-#define TR_CH1      2
-#define TR_CH2      3
+#define blIn1Pin     37
+#define blIn1Channel 4
+#define blIn2Pin     36
+#define blIn2Channel 5
+#define blADCPin     8
 
-#define BL_IN1_PIN  37
-#define BL_IN2_PIN  36
-#define BL_CH1      4
-#define BL_CH2      5
+#define brIn1Pin     9
+#define brIn1Channel 6
+#define brIn2Pin     3
+#define brIn2Channel 7
+#define brADCPin     7
 
-#define BR_IN1_PIN  9
-#define BR_IN2_PIN  3
-#define BR_CH1      6
-#define BR_CH2      7
-
-// Configure one motor's PWM channels and drive it at full speed forward.
-static void motorFullSpeed(int in1Pin, int in2Pin, int ch1, int ch2) {
-    ledcSetup(ch1, MOTOR_PWM_FREQ, MOTOR_PWM_RES);
-    ledcAttachPin(in1Pin, ch1);
-
-    ledcSetup(ch2, MOTOR_PWM_FREQ, MOTOR_PWM_RES);
-    ledcAttachPin(in2Pin, ch2);
-
-    // Forward full speed: IN2 high, IN1 low (matches Maslow DCMotor::fullOut())
-    ledcWrite(ch1, 0);
-    ledcWrite(ch2, MOTOR_MAX_PWM);
-}
+DCMotor tlMotor, trMotor, blMotor, brMotor;
 
 void setup() {
     Serial.begin(115200);
     Serial.println("Maslow 4 motor test: driving all motors at full speed");
 
-    motorFullSpeed(TL_IN1_PIN, TL_IN2_PIN, TL_CH1, TL_CH2);
-    motorFullSpeed(TR_IN1_PIN, TR_IN2_PIN, TR_CH1, TR_CH2);
-    motorFullSpeed(BL_IN1_PIN, BL_IN2_PIN, BL_CH1, BL_CH2);
-    motorFullSpeed(BR_IN1_PIN, BR_IN2_PIN, BR_CH1, BR_CH2);
+    tlMotor.begin(tlIn1Pin, tlIn2Pin, tlADCPin, tlIn1Channel, tlIn2Channel);
+    trMotor.begin(trIn1Pin, trIn2Pin, trADCPin, trIn1Channel, trIn2Channel);
+    blMotor.begin(blIn1Pin, blIn2Pin, blADCPin, blIn1Channel, blIn2Channel);
+    brMotor.begin(brIn1Pin, brIn2Pin, brADCPin, brIn1Channel, brIn2Channel);
+
+    tlMotor.fullOut();
+    trMotor.fullOut();
+    blMotor.fullOut();
+    brMotor.fullOut();
 
     Serial.println("All four motors running at full speed.");
 }
